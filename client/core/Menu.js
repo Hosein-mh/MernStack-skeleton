@@ -14,7 +14,7 @@ const isActive = (history, path) => {
   else
     return {color: '#ffffff'}
 }
-const Menu = withRouter(({history}) => (
+const Menu = withRouter(({ history,match }) => (
   <AppBar position="static">
     <Toolbar>
       <Typography type="title" color="inherit">
@@ -29,26 +29,27 @@ const Menu = withRouter(({history}) => (
         <Button style={isActive(history, "/users")}>Users</Button>
       </Link>
       {
-        !auth.isAuthenticated() && (<span>
-          <Link to="/signup">
-            <Button style={isActive(history, "/signup")}>Sign up
-            </Button>
-          </Link>
-          <Link to="/signin">
-            <Button style={isActive(history, "/signin")}>Sign In
-            </Button>
-          </Link>
-        </span>)
-      }
-      {
-        auth.isAuthenticated() && (<span>
-          <Link to={"/user/" + auth.isAuthenticated().user._id}>
-            <Button style={isActive(history, "/user/" + auth.isAuthenticated().user._id)}>My Profile</Button>
-          </Link>
-          <Button color="inherit" onClick={() => {
-              auth.signout(() => history.push('/'))
-            }}>Sign out</Button>
-        </span>)
+        auth.isAuthenticated() ?
+          (<span>
+            <Link to={"/user/" + auth.isAuthenticated().user._id}>
+              <Button style={isActive(history, "/user/" + auth.isAuthenticated().user._id)}>My Profile</Button>
+            </Link>
+            <Button color="inherit" onClick={() => {
+                auth.signout(() => history.push('/'))
+              }}>Sign out</Button>
+          </span>) : 
+          (
+            <span>
+              <Link to="/signup">
+                <Button style={isActive(history, "/signup")}>Sign up
+                </Button>
+              </Link>
+              <Link to="/signin">
+                <Button style={isActive(history, "/signin")}>Sign In
+                </Button>
+              </Link>
+            </span>
+          )
       }
     </Toolbar>
   </AppBar>

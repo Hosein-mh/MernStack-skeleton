@@ -1,4 +1,4 @@
-import React, {Component} from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import {withStyles} from 'material-ui/styles'
 import Paper from 'material-ui/Paper'
@@ -28,72 +28,63 @@ const styles = theme => ({
   }
 })
 
-class Profile extends Component {
-  constructor({match}) {
-    super()
-    this.state = {
-      user: '',
-      redirectToSignin: false
-    }
-    this.match = match
-  }
-  init = (userId) => {
+const Profile = function({ match, classes }) {
+
+  // Inits States and consts
+  const [user, setUser] = useState({});
+  const [redirectToSignin, setRedirectToSignin] = useState(false);
+
+  const init = (userId) => {
     const jwt = auth.isAuthenticated()
     read({
-      userId: userId
+      userId
     }, {t: jwt.token}).then((data) => {
       if (data.error) {
-        this.setState({redirectToSignin: true})
+        setRedirectToSignin(true);
       } else {
-        this.setState({user: data})
+        setUser(data);
       }
     })
   }
-  componentWillReceiveProps = (props) => {
-    this.init(props.match.params.userId)
+  useEffect(() => {
+    init(match.params.userId);
+  })
+
+  if (redirectToSignin) {
+    return <Redirect to='/signin'/>
   }
-  componentDidMount = () => {
-    this.init(this.match.params.userId)
-  }
-  render() {
-    const {classes} = this.props
-    const redirectToSignin = this.state.redirectToSignin
-    if (redirectToSignin) {
-      return <Redirect to='/signin'/>
-    }
-    return (
-      <Paper className={classes.root} elevation={4}>
-        <Typography type="title" className={classes.title}>
-          Profile
-        </Typography>
-        <List dense>
-          <ListItem>
-            <ListItemAvatar>
-              <Avatar>
-                <Person/>
-              </Avatar>
-            </ListItemAvatar>
-            <ListItemText primary={this.state.user.name} secondary={this.state.user.email}/> {
-             auth.isAuthenticated().user && auth.isAuthenticated().user._id == this.state.user._id && 
-              (<ListItemSecondaryAction>
-                <Link to={"/user/edit/" + this.state.user._id}>
-                  <IconButton aria-label="Edit" color="primary">
-                    <Edit/>
-                  </IconButton>
-                </Link>
-                <DeleteUser userId={this.state.user._id}/>
-              </ListItemSecondaryAction>)
-            }
-          </ListItem>
-          <Divider/>
-          <ListItem>
-            <ListItemText primary={"Joined: " + (
-              new Date(this.state.user.created)).toDateString()}/>
-          </ListItem>
-        </List>
-      </Paper>
-    )
-  }
+  return (
+    <Paper className={classes.root} elevation={4}>
+      <Typography type="title" className={classes.title}>
+        Profile
+      </Typography>
+      <List dense>
+        <ListItem>
+          <ListItemAvatar>
+            <Avatar>
+              <Person/>
+            </Avatar>
+          </ListItemAvatar>
+          <ListItemText primary={user.name} secondary={user.email}/> {
+            auth.isAuthenticated().user && auth.isAuthenticated().user._id == user._id && 
+            (<ListItemSecondaryAction>
+              <Link to={"/user/edit/" + user._id}>
+                <IconButton aria-label="Edit" color="primary">
+                  <Edit/>
+                </IconButton>
+              </Link>
+              <DeleteUser userId={user._id}/>
+            </ListItemSecondaryAction>)
+          }
+        </ListItem>
+        <Divider/>
+        <ListItem>
+          <ListItemText primary={"Joined: " + (
+            new Date(user.created)).toDateString()}/>
+        </ListItem>
+      </List>
+    </Paper>
+  )
 }
 Profile.propTypes = {
   classes: PropTypes.object.isRequired

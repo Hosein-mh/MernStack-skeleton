@@ -48,7 +48,7 @@ const update = (params, credentials, user) => {
 }
 
 const remove = (params, credentials) => {
-  return fetch('/api/users/' + params.userId, {
+  return fetch(`/api/users/${params.userId}`, {
     method: 'DELETE',
     headers: {
       'Accept': 'application/json',

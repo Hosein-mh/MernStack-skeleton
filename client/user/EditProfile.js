@@ -1,4 +1,4 @@
-import React, {Component} from 'react'
+import React, {useState, useEffect} from 'react'
 import Card, {CardActions, CardContent} from 'material-ui/Card'
 import Button from 'material-ui/Button'
 import TextField from 'material-ui/TextField'
@@ -36,80 +36,74 @@ const styles = theme => ({
   }
 })
 
-class EditProfile extends Component {
-  constructor({match}) {
-    super()
-    this.state = {
-      name: '',
-      email: '',
-      password: '',
-      redirectToProfile: false,
-      error: ''
-    }
-    this.match = match
-  }
+const initUserState = {
+  name: '',
+  email: '',
+  password: ''
+}
 
-  componentDidMount = () => {
-    const jwt = auth.isAuthenticated()
+const EditProfile = function({match, classes}) {
+
+  // Declare varibles and States
+  const [user, setUser] = useState(initUserState);
+  const [redirectToProfile, setRedirectToProfile] = useState(false);
+  const [error, setError] = useState('');
+  const {userId} = match.params;
+  let jwt = false;
+
+  useEffect(() => {
+    jwt = auth.isAuthenticated();
     read({
-      userId: this.match.params.userId
-    }, {t: jwt.token}).then((data) => {
-      if (data.error) {
-        this.setState({error: data.error})
-      } else {
-        this.setState({name: data.name, email: data.email})
-      }
+      userId
+    },{t: jwt.token}).then(data => {
+      data.error ?
+      setError(data.error) :
+      setUser({...user, userId, name: data.name, email: data.email})
     })
-  }
-  clickSubmit = () => {
-    const jwt = auth.isAuthenticated()
-    const user = {
-      name: this.state.name || undefined,
-      email: this.state.email || undefined,
-      password: this.state.password || undefined
-    }
+  }, [])
+
+  const clickSubmit = () => {
+    jwt = auth.isAuthenticated()
     update({
-      userId: this.match.params.userId
+      userId
     }, {
       t: jwt.token
     }, user).then((data) => {
       if (data.error) {
-        this.setState({error: data.error})
+        setError( data.error)
       } else {
-        this.setState({'userId': data._id, 'redirectToProfile': true})
+        setRedirectToProfile(true);
       }
     })
   }
-  handleChange = name => event => {
-    this.setState({[name]: event.target.value})
+  const handleChange = name => event => {
+    setUser({...user, [name]: event.target.value})
   }
-  render() {
-    const {classes} = this.props
-    if (this.state.redirectToProfile) {
-      return (<Redirect to={'/user/' + this.state.userId}/>)
-    }
-    return (
-      <Card className={classes.card}>
-        <CardContent>
-          <Typography type="headline" component="h2" className={classes.title}>
-            Edit Profile
-          </Typography>
-          <TextField id="name" label="Name" className={classes.textField} value={this.state.name} onChange={this.handleChange('name')} margin="normal"/><br/>
-          <TextField id="email" type="email" label="Email" className={classes.textField} value={this.state.email} onChange={this.handleChange('email')} margin="normal"/><br/>
-          <TextField id="password" type="password" label="Password" className={classes.textField} value={this.state.password} onChange={this.handleChange('password')} margin="normal"/>
-          <br/> {
-            this.state.error && (<Typography component="p" color="error">
-              <Icon color="error" className={classes.error}>error</Icon>
-              {this.state.error}
-            </Typography>)
-          }
-        </CardContent>
-        <CardActions>
-          <Button color="primary" variant="raised" onClick={this.clickSubmit} className={classes.submit}>Submit</Button>
-        </CardActions>
-      </Card>
-    )
+
+  if (redirectToProfile) {
+    return (<Redirect to={'/user/' + match.params.userId}/>)
   }
+  return (
+    <Card className={classes.card}>
+      <CardContent>
+        <Typography type="headline" component="h2" className={classes.title}>
+          Edit Profile
+        </Typography>
+        <TextField id="name" label="Name" className={classes.textField} value={user.name} onChange={handleChange('name')} margin="normal"/><br/>
+        <TextField id="email" type="email" label="Email" className={classes.textField} value={user.email} onChange={handleChange('email')} margin="normal"/><br/>
+        <TextField id="password" type="password" label="Password" className={classes.textField} value={user.password} onChange={handleChange('password')} margin="normal"/>
+        <br/> {
+          error && (<Typography component="p" color="error">
+            <Icon color="error" className={classes.error}>error</Icon>
+            {error}
+          </Typography>)
+        }
+      </CardContent>
+      <CardActions>
+        <Button color="primary" variant="raised" onClick={clickSubmit} className={classes.submit}>Submit</Button>
+      </CardActions>
+    </Card>
+  )
 }
 
 EditProfile.propTypes = {

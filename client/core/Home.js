@@ -20,23 +20,21 @@ const styles = theme => ({
   }
 })
 
-class Home extends Component {
-  render() {
-    const {classes} = this.props
-    return (
-        <Card className={classes.card}>
-          <Typography type="headline" component="h2" className={classes.title}>
-            Home Page
-          </Typography>
-          <CardMedia className={classes.media} image={seashellImg} title="Unicorn Shells"/>
-          <CardContent>
-            <Typography type="body1" component="p">
-              Welcome to the MERN Skeleton home page.
-            </Typography>
-          </CardContent>
-        </Card>
-    )
-  }
+
+const Home = ({ classes }) => {
+  return (
+    <Card className={classes.card}>
+      <Typography variant="headline" className={classes.title}>
+        Home Page
+      </Typography>
+      <CardMedia className={classes.media} image={seashellImg} title="Unicorn Shells"/>
+      <CardContent>
+        <Typography variant="body1">
+          Welcome to the MERN Skeleton home page.
+        </Typography>
+      </CardContent>
+    </Card>
+  )
 }
 
 Home.propTypes = {
